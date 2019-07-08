@@ -1,8 +1,16 @@
 import React from 'react';
 import WbnPlayer from './WbnPlayer';
+import ErrorPage from '../ErrorPage';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 const App = () => (
-    <WbnPlayer />
+    <BrowserRouter>
+        <Switch>
+            <Route exact path="/" component={WbnPlayer} />
+            <Route exact path="/:activeVideo" component={WbnPlayer} />
+            <Route path="*" component={ErrorPage} />
+        </Switch>
+    </BrowserRouter>
 );
 
 export default App;
