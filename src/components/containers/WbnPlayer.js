@@ -1,4 +1,4 @@
-import React, { useState, useEffect }from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from 'styled-components';
 import Video from '../Video';
 import Playlist from '../containers/Playlist';
@@ -24,48 +24,93 @@ const themeLight = {
     color: '#353535'
 };
 
-const WbnPlayer = ({ match, history, location }) => {
+const WbnPlayer = props => {
 
     const videos = JSON.parse(document.querySelector('[name="videos"]').value);
+    const savedState = JSON.parse(localStorage.getItem(`${videos.playlistId}`));
 
     const [state, setState] = useState({
-        videos: videos.playlist,
-        activeVideo: videos.playlist[0],
-        nightMode: true,
-        playlistId: videos.playlistId,
+        videos: savedState ? savedState.videos : videos.playlist,
+        activeVideo: savedState ? savedState.activeVideo : videos.playlist[0],
+        nightMode: savedState ? savedState.nightMode : true,
+        playlistId: savedState ? savedState.playlistId : videos.playlistId,
         autoplay: false,
     });
 
     useEffect(() => {
-        const videoId = match.params.activeVideo;
-        if(videoId !== undefined) {
+            localStorage.setItem(`${state.playlistId}`, JSON.stringify({ ...state }));
+        }, [state]);
+
+    useEffect(() => {
+        console.log('test');
+        const videoId = props.match.params.activeVideo;
+        if (videoId !== undefined) {
             const newActiveVideo = state.videos.findIndex(
-                video => video.id === videoId
+                video => video.id === videoId,
             );
             setState(prev => ({
                 ...prev,
                 activeVideo: prev.videos[newActiveVideo],
-                autoplay: location.autoplay,
-            }))
+                autoplay: props.location.autoplay,
+            }));
         } else {
-            history.push({
+            props.history.push({
                 pathname: `/${state.activeVideo.id}`,
                 autoplay: false,
-            })
+            });
         }
-
-    }, [history, location.autoplay, match.params.activeVideo, state.activeVideo.id, state.videos]);
+    }, [
+        props.history,
+        props.location.autoplay,
+        props.match.params.activeVideo,
+        state.activeVideo.id,
+        state.videos,
+    ]);
 
     const nightModeCallback = () => {
-
+        setState( prevState => ({
+            ...prevState,
+            nightMode: !prevState.nightMode
+        }));
     };
 
     const endCallback = () => {
+        const videoId = props.match.params.activeVideo;
+        const currentVideoIndex = state.videos.findIndex(
+            video => video.id === videoId
+        );
 
+        const nextVideo = currentVideoIndex === state.videos.length -1 ? 0 : currentVideoIndex + 1;
+
+        props.history.push({
+            pathname: `${state.videos[nextVideo].id}`,
+            autoplay: false
+        })
     };
 
-    const progressCallback = () => {
+    const progressCallback = e => {
+        if(e.playedSeconds > 10 && e.playedSeconds < 11) {
+            const videos = [...state.videos];
+            const playedVideo = videos.find(
+                video => video.id === state.activeVideo.id
+            );
 
+            playedVideo.played = true;
+
+            setState( prevState => ({
+                ...prevState,
+                videos
+            }));
+
+            // setState({
+            //     ...state,
+            //     videos: state.videos.map(el => {
+            //         return el.id === state.activeVideo.id
+            //         ? { ...el, played: true}
+            //         : el;
+            //     })
+            // })
+        }
     };
 
     return (

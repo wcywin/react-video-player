@@ -1,14 +1,14 @@
 import React from 'react';
-import StyledNightMode from './styles/StyledNightmode';
+import StyledNightmode from './styles/StyledNightmode';
 
 const NightMode = ({ nightModeCallback, nightMode }) => (
-    <StyledNightMode>
-        <span>NightMode: </span>
+    <StyledNightmode>
+        <span>Nightmode: </span>
         <label className="switch">
-            <input type="checkbox" checked={nightMode} onChange={nightModeCallback}/>
+            <input type="checkbox" defaultChecked={nightMode} onChange={nightModeCallback} />
             <span className="slider round" />
         </label>
-    </StyledNightMode>
+    </StyledNightmode>
 );
 
 export default NightMode;
